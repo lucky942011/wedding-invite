@@ -188,6 +188,7 @@ function WaxSeal({ breaking, onClick }: { breaking: boolean; onClick: () => void
   );
 }
 
+
 /* ─── Countdown tile ─── */
 function CountdownTile({ value, label }: { value: number; label: string }) {
   return (
@@ -231,8 +232,6 @@ function CountdownTile({ value, label }: { value: number; label: string }) {
 /* ═══════════════════════════════════════════════════════ */
 
 export default function WeddingInvite() {
-  const [sealBreaking, setSealBreaking] = useState(false);
-  const [cardExit, setCardExit] = useState(false);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [navVisible, setNavVisible] = useState(false);
   const [rsvpData, setRsvpData] = useState({ name: "", attending: "yes", guests: "2", message: "" });
@@ -255,16 +254,10 @@ export default function WeddingInvite() {
     return () => window.removeEventListener("scroll", handler);
   }, [inviteOpen]);
 
-  function breakSeal() {
-    if (sealBreaking) return;
-    setSealBreaking(true);
-    // crack then fly away card
-    setTimeout(() => setCardExit(true), 600);
-    setTimeout(() => {
-      setInviteOpen(true);
-      document.body.style.overflow = "auto";
-      audioRef.current && (audioRef.current.volume = 0.2, audioRef.current.play().catch(() => {}));
-    }, 1350);
+  function openInvitation() {
+    setInviteOpen(true);
+    document.body.style.overflow = "auto";
+    audioRef.current && (audioRef.current.volume = 0.2, audioRef.current.play().catch(() => {}));
   }
 
   function scrollTo(id: string) {
@@ -293,97 +286,95 @@ export default function WeddingInvite() {
         </span>
       ))}
 
-      {/* ════════════ ENTRY CARD ════════════ */}
+      {/* ════════════ ENTRY SCREEN ════════════ */}
       {!inviteOpen && (
         <div
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${cardExit ? "card-exit pointer-events-none" : ""}`}
+          className="fixed inset-0 z-50 flex items-end justify-center pb-12"
           style={{
-            background: "radial-gradient(ellipse at 50% 30%, #1e0e06 0%, #0d0804 70%)",
+            backgroundImage: "url('/ganeshafirst.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
           }}
+          onClick={openInvitation}
         >
-          {/* Stars */}
-          {STARS.map((s) => (
-            <div
-              key={s.id}
-              className="absolute rounded-full"
-              style={{
-                width: s.size, height: s.size,
-                top: s.top, left: s.left,
-                background: "#f0e6cc",
-                animation: `sparkTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite`,
-                opacity: 0,
-              }}
-            />
-          ))}
-
-          {/* Corner ornaments */}
-          {["top-5 left-5", "top-5 right-5", "bottom-5 left-5", "bottom-5 right-5"].map((pos, i) => (
-            <div key={i} className={`absolute ${pos} text-amber-400/25 text-4xl select-none hidden sm:block`}>
-              {["❧", "❧", "❧", "❧"][i]}
-            </div>
-          ))}
-
-          {/* Double border frame */}
-          <div className="absolute inset-6 pointer-events-none hidden sm:block"
-            style={{ border: "1px solid rgba(201,168,76,.15)" }} />
-          <div className="absolute inset-8 pointer-events-none hidden sm:block"
-            style={{ border: "1px solid rgba(201,168,76,.07)" }} />
-
-          {/* The card */}
           <div
-            className="relative flex flex-col items-center justify-between float-anim"
+            className="absolute inset-0"
             style={{
-              width: "min(340px, 86vw)",
-              padding: "48px 36px",
-              background: "linear-gradient(160deg, #1c0e07 0%, #150b05 60%, #0f0703 100%)",
-              border: "1px solid rgba(201,168,76,.3)",
-              boxShadow: "0 0 60px rgba(0,0,0,.8), 0 0 0 1px rgba(201,168,76,.08), inset 0 1px 0 rgba(201,168,76,.1)",
+              background: "linear-gradient(180deg, rgba(0,0,0,0.45) 0%, rgba(13,8,4,0.85) 100%)",
             }}
-          >
-            {/* Top ornament */}
-            <div className="flex items-center gap-3 mb-6 w-full">
-              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,.4))" }} />
-              <span style={{ color: "#c9a84c", fontSize: "0.7rem", letterSpacing: "0.3em" }}>✦</span>
-              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(201,168,76,.4),transparent)" }} />
-            </div>
-
-            {/* Opening text */}
-            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.5)", textTransform: "uppercase", marginBottom: 20 }}>
-              You are cordially invited to
-            </p>
-
-            {/* Names */}
-            <div className="text-center mb-2">
-              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(2.8rem,9vw,3.8rem)", lineHeight: 1.1, color: "#e8c96d", textShadow: "0 0 30px rgba(201,168,76,.3)" }}>
-                Adarsh
-              </h1>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", color: "rgba(201,168,76,.5)", letterSpacing: "0.3em", margin: "4px 0" }}>weds</p>
-              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(2.8rem,9vw,3.8rem)", lineHeight: 1.1, color: "#e8c96d", textShadow: "0 0 30px rgba(201,168,76,.3)" }}>
-                Shreya
-              </h1>
-            </div>
-
-            {/* Date */}
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", color: "rgba(240,230,204,.5)", letterSpacing: "0.15em", marginBottom: 8 }}>
-              1st July 2026
-            </p>
-            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.35)", textTransform: "uppercase", marginBottom: 32 }}>
-              Sri Banshi Garden, Muzaffarpur
-            </p>
-
-            {/* Wax Seal */}
-            <WaxSeal breaking={sealBreaking} onClick={breakSeal} />
-
-            {/* Bottom label */}
-            <p
-              className="mt-6 animate-pulse"
-              style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}
+          />
+          <div className="relative z-10 flex flex-col items-center justify-center gap-4 text-center px-6 cursor-pointer">
+            <h1
+              style={{
+                fontFamily: "'Playfair Display', serif",
+                fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+                color: "#f7e8b8",
+                letterSpacing: "0.08em",
+                lineHeight: 1.05,
+                textShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                margin: 0,
+              }}
             >
-              {sealBreaking ? "Opening…" : "Tap seal to open"}
+              Welcome to Our Story
+            </h1>
+            <p
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                fontSize: "clamp(1rem, 2.2vw, 1.5rem)",
+                color: "#d7b969",
+                letterSpacing: "0.14em",
+                margin: 0,
+                textShadow: "0 2px 10px rgba(0,0,0,0.25)",
+              }}
+            >
+              Together With Love
             </p>
+            {/* Small seal */}
+            <div
+              className="mt-4"
+              style={{
+                width: 80,
+                height: 80,
+                borderRadius: "50%",
+                background: "radial-gradient(circle at 38% 38%, #9e2020 0%, #6b1414 40%, #4a0e0e 100%)",
+                boxShadow: "0 0 0 2px #c9a84c, 0 0 0 4px #6b1414, 0 4px 16px rgba(0,0,0,.5), inset 0 1px 2px rgba(255,200,100,.1)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                textAlign: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontSize: "0.8rem",
+                  color: "#e8c96d",
+                  letterSpacing: "0.1em",
+                  textShadow: "0 1px 2px rgba(0,0,0,.5)",
+                  lineHeight: 1,
+                }}
+              >
+                A & S
+              </span>
+              <div style={{ width: 24, height: 1, background: "rgba(201,168,76,.5)", margin: "2px auto" }} />
+              <span
+                style={{
+                  fontFamily: "'Montserrat', sans-serif",
+                  fontSize: "0.35rem",
+                  color: "rgba(201,168,76,.7)",
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                }}
+              >
+                1st July
+              </span>
+            </div>
           </div>
         </div>
       )}
+
 
       {/* ════════════ FULL INVITE ════════════ */}
       {inviteOpen && (
