@@ -28,6 +28,15 @@ jobs:
 
       - run: pnpm --filter @workspace/wedding-invite run build
 
+      - name: Verify build output
+        run: |
+          echo "=== Working directory ==="
+          pwd
+          echo "=== Build output listing ==="
+          ls -la artifacts/wedding-invite/dist/public
+          echo "=== Build subtree ==="
+          find artifacts/wedding-invite/dist/public -maxdepth 2 | sort
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
