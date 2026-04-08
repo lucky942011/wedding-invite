@@ -291,7 +291,7 @@ export default function WeddingInvite() {
         <div
           className="fixed inset-0 z-50 flex items-end justify-center pb-12"
           style={{
-            backgroundImage: "url('/ganeshafirst.jpg')",
+            backgroundImage: "url('/wedding-invite/ganeshafirst.jpg')",
             backgroundSize: "cover",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
