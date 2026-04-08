@@ -288,7 +288,7 @@ export default function WeddingInvite() {
                 lineHeight: 1.2,
               }}
             >
-              Adarsh & Priya
+              Adarsh & Shreya
             </h1>
             <p
               className="text-amber-200/50 tracking-[0.2em] text-sm"
@@ -445,7 +445,7 @@ export default function WeddingInvite() {
                     animationDelay: "0.5s",
                   }}
                 >
-                  Priya
+                  Shreya
                 </h1>
               </div>
 
@@ -600,7 +600,7 @@ export default function WeddingInvite() {
                   {
                     year: "2024",
                     title: "The Proposal",
-                    desc: "Under a sky full of stars, Adarsh asked the question that changed everything. Priya said yes, and a lifetime of together began right there.",
+                    desc: "Under a sky full of stars, Adarsh asked the question that changed everything. Shreya said yes, and a lifetime of together began right there.",
                     icon: "💍",
                   },
                 ].map((item, idx) => (
@@ -971,7 +971,7 @@ export default function WeddingInvite() {
                 className="gold-shimmer mb-4"
                 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2.5rem, 6vw, 4rem)" }}
               >
-                Adarsh & Priya
+                Adarsh & Shreya
               </h2>
               <div className="gold-divider max-w-xs mx-auto mb-6">
                 <span className="text-amber-500/40 text-xs">✦</span>
