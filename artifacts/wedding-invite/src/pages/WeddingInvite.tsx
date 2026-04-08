@@ -45,7 +45,7 @@ const EVENTS = [
     date: "June 29, 2026",
     day: "Monday",
     time: "6:00 PM Onwards",
-    venue: "The Grand Palace, Mumbai",
+    venue: "Sri Banshi Garden, Muzaffarpur",
     icon: "💒",
     desc: "Join us as two families come together to celebrate the union of Adarsh & Shreya in an intimate ceremony of blessings.",
   },
@@ -54,7 +54,7 @@ const EVENTS = [
     date: "July 1, 2026",
     day: "Wednesday",
     time: "11:00 AM Onwards",
-    venue: "The Grand Palace, Mumbai",
+    venue: "Sri Banshi Garden, Muzaffarpur",
     icon: "🌼",
     desc: "A vibrant morning of turmeric rituals, folk music, and the warm glow of family blessings to herald the sacred day.",
   },
@@ -63,7 +63,7 @@ const EVENTS = [
     date: "July 1, 2026",
     day: "Wednesday",
     time: "7:00 PM Onwards",
-    venue: "The Grand Palace, Mumbai",
+    venue: "Sri Banshi Garden, Muzaffarpur",
     icon: "🪔",
     desc: "The sacred Saptapadi — seven vows, one soul. Witness the union under a canopy of flowers as Adarsh weds Shreya.",
   },
@@ -368,7 +368,7 @@ export default function WeddingInvite() {
               1st July 2026
             </p>
             <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.35)", textTransform: "uppercase", marginBottom: 32 }}>
-              The Grand Palace, Mumbai
+              Sri Banshi Garden, Muzaffarpur
             </p>
 
             {/* Wax Seal */}
@@ -456,7 +456,7 @@ export default function WeddingInvite() {
                 1<sup>st</sup> July 2026
               </p>
               <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.4)", textTransform: "uppercase", marginTop: 8 }}>
-                The Grand Palace, Mumbai
+                Sri Banshi Garden, Muzaffarpur
               </p>
             </div>
 
@@ -504,8 +504,8 @@ export default function WeddingInvite() {
               {/* Family names */}
               <div className="reveal mb-12 grid sm:grid-cols-2 gap-8" style={{ transitionDelay: ".15s" }}>
                 {[
-                  { family: "Groom's Family", names: ["Late Shri Ramesh Kumar", "Smt. Sunita Sharma"], from: "Lucknow, UP" },
-                  { family: "Bride's Family", names: ["Shri Vijay Mehta", "Smt. Kavita Mehta"], from: "Mumbai, MH" },
+                  { family: "Groom's Family", names: ["Shri Sudhanshu Bhushan Prasad", "Smt. Bibha Shrivastava"], from: "Muzaffarpur, Bihar" },
+                  { family: "Bride's Family", names: ["Shri Sunil Kumar Shrivastava", "Dr. Prem Lata Shrivastava"], from: "Muzaffarpur, Bihar" },
                 ].map((f, i) => (
                   <div key={i} className="text-center p-6"
                     style={{ border: "1px solid rgba(201,168,76,.15)", background: "rgba(201,168,76,.02)" }}>
@@ -519,11 +519,10 @@ export default function WeddingInvite() {
               </div>
 
               {/* Story milestones */}
-              <div className="grid sm:grid-cols-3 gap-6">
+              <div className="grid sm:grid-cols-2 gap-6 max-w-xl mx-auto">
                 {[
-                  { year: "2020", title: "First Meeting", icon: "✨", desc: "Two souls met across a room full of people, and the universe quietly smiled." },
-                  { year: "2022", title: "Falling in Love", icon: "💫", desc: "Through shared dreams and countless conversations, love found its way home." },
-                  { year: "2025", title: "The Proposal", icon: "💍", desc: "Under a sky full of stars, Adarsh asked, and Shreya said yes." },
+                  { year: "Dec 2025", title: "First Meeting", icon: "✨", desc: "On the 5th of December 2025, two souls met and the universe quietly smiled — a moment that changed everything." },
+                  { year: "2026", title: "The Proposal", icon: "💍", desc: "Under a sky full of stars, Adarsh asked, and Shreya said yes — and a lifetime of together began." },
                 ].map((s, i) => (
                   <div key={s.year} className="reveal event-card p-6 text-center" style={{ transitionDelay: `${i * 0.12}s` }} data-testid={`story-${i}`}>
                     <div style={{ fontSize: "1.8rem", marginBottom: 10 }}>{s.icon}</div>
@@ -631,9 +630,9 @@ export default function WeddingInvite() {
               <div className="reveal gold-divider mb-6" style={{ transitionDelay: ".15s" }}><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
 
               <div className="reveal mb-4" style={{ transitionDelay: ".2s" }}>
-                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#e8c96d", marginBottom: 4 }}>The Grand Palace</h3>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#e8c96d", marginBottom: 4 }}>Sri Banshi Garden</h3>
                 <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(201,168,76,.45)", textTransform: "uppercase" }}>
-                  Marine Drive · Mumbai · Maharashtra
+                  Muzaffarpur · Bihar
                 </p>
               </div>
 
@@ -650,7 +649,7 @@ export default function WeddingInvite() {
                 data-testid="venue-map"
               >
                 <iframe
-                  src="https://maps.google.com/maps?q=Marine+Drive,+Mumbai&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  src="https://maps.google.com/maps?q=Sri+Banshi+Garden+Muzaffarpur+Bihar&t=&z=15&ie=UTF8&iwloc=&output=embed"
                   width="100%"
                   height="100%"
                   style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) contrast(0.85) brightness(0.9)" }}
@@ -661,7 +660,7 @@ export default function WeddingInvite() {
               </div>
 
               <p className="reveal mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(240,230,204,.45)", lineHeight: 1.8, transitionDelay: ".3s" }}>
-                Nestled along the golden shore of the Arabian Sea, The Grand Palace offers an evening of timeless elegance for the celebration of a lifetime.
+                Sri Banshi Garden is a stunning celebration venue in the heart of Muzaffarpur, offering a grand setting for an evening of joy, traditions, and timeless memories.
               </p>
             </div>
           </section>
@@ -808,7 +807,7 @@ export default function WeddingInvite() {
             </h2>
             <div className="gold-divider mb-6"><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
             <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.35)", marginBottom: 16 }}>
-              1st July 2026 · The Grand Palace, Mumbai
+              1st July 2026 · Sri Banshi Garden, Muzaffarpur
             </p>
             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", fontStyle: "italic", color: "rgba(240,230,204,.3)" }}>
               "Two hearts, one beautiful journey."
