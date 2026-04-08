@@ -33,22 +33,31 @@ function useCountdown(targetDate: Date): TimeLeft {
   return timeLeft;
 }
 
-function useScrollFade() {
+function useScrollFade(active: boolean) {
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add("visible");
-          }
-        });
-      },
-      { threshold: 0.15 }
-    );
-    const elements = document.querySelectorAll(".scroll-fade");
-    elements.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+    if (!active) return;
+    // Small delay to let React finish rendering all sections into the DOM
+    const timeout = setTimeout(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      );
+      const elements = document.querySelectorAll(".scroll-fade");
+      elements.forEach((el) => observer.observe(el));
+      // Cleanup stored on ref so we can disconnect on unmount
+      (window as any).__scrollFadeObserver = observer;
+    }, 100);
+    return () => {
+      clearTimeout(timeout);
+      (window as any).__scrollFadeObserver?.disconnect();
+    };
+  }, [active]);
 }
 
 const weddingDate = new Date("December 12, 2026 17:00:00");
@@ -131,7 +140,7 @@ export default function WeddingInvite() {
   const [activeNav, setActiveNav] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timeLeft = useCountdown(weddingDate);
-  useScrollFade();
+  useScrollFade(showContent);
 
   const openInvite = useCallback(() => {
     if (envelopeOpen) return;
