@@ -1,968 +1,792 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
-interface TimeLeft {
-  days: number;
-  hours: number;
-  minutes: number;
-  seconds: number;
-}
-
-function useCountdown(targetDate: Date): TimeLeft {
-  const [timeLeft, setTimeLeft] = useState<TimeLeft>({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const calculate = () => {
-      const now = new Date().getTime();
-      const diff = targetDate.getTime() - now;
-      if (diff <= 0) {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-        return;
-      }
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((diff % (1000 * 60)) / 1000),
-      });
+/* ─── Countdown hook ─── */
+function useCountdown(target: Date) {
+  const calc = () => {
+    const d = target.getTime() - Date.now();
+    if (d <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    return {
+      days: Math.floor(d / 86400000),
+      hours: Math.floor((d % 86400000) / 3600000),
+      minutes: Math.floor((d % 3600000) / 60000),
+      seconds: Math.floor((d % 60000) / 1000),
     };
-    calculate();
-    const id = setInterval(calculate, 1000);
+  };
+  const [t, setT] = useState(calc);
+  useEffect(() => {
+    const id = setInterval(() => setT(calc()), 1000);
     return () => clearInterval(id);
-  }, [targetDate]);
-
-  return timeLeft;
+  }, []);
+  return t;
 }
 
-function useScrollFade(active: boolean) {
+/* ─── IntersectionObserver reveal hook ─── */
+function useReveal(active: boolean) {
   useEffect(() => {
     if (!active) return;
-    // Small delay to let React finish rendering all sections into the DOM
     const timeout = setTimeout(() => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("visible");
-            }
-          });
-        },
-        { threshold: 0.08, rootMargin: "0px 0px -40px 0px" }
+      const io = new IntersectionObserver(
+        (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in-view"); }),
+        { threshold: 0.1, rootMargin: "0px 0px -30px 0px" }
       );
-      const elements = document.querySelectorAll(".scroll-fade");
-      elements.forEach((el) => observer.observe(el));
-      // Cleanup stored on ref so we can disconnect on unmount
-      (window as any).__scrollFadeObserver = observer;
-    }, 100);
-    return () => {
-      clearTimeout(timeout);
-      (window as any).__scrollFadeObserver?.disconnect();
-    };
+      document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+      (window as any).__revealIo = io;
+    }, 150);
+    return () => { clearTimeout(timeout); (window as any).__revealIo?.disconnect(); };
   }, [active]);
 }
 
-const weddingDate = new Date("December 12, 2026 17:00:00");
+/* ─── Data ─── */
+const WEDDING_DATE = new Date("July 1, 2026 19:00:00");
 
-const galleryImages = [
+const EVENTS = [
   {
-    src: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
-    alt: "Couple portrait",
-    className: "row-span-2",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80",
-    alt: "Wedding flowers",
-    className: "",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1549416878-b1df28c9da68?w=600&q=80",
-    alt: "Wedding rings",
-    className: "",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&q=80",
-    alt: "Reception venue",
-    className: "col-span-2",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&q=80",
-    alt: "Wedding cake",
-    className: "",
-  },
-];
-
-const events = [
-  {
-    name: "Mehendi Ceremony",
-    date: "December 10, 2026",
-    time: "4:00 PM Onwards",
-    venue: "Rosewood Garden, Mumbai",
-    icon: "🌿",
-    description: "Join us for an evening of henna art, music, and celebration as we prepare for the festivities ahead.",
-    color: "from-green-900/30 to-green-800/10",
-    borderColor: "border-green-700/30",
+    name: "Engagement",
+    date: "June 29, 2026",
+    day: "Monday",
+    time: "6:00 PM Onwards",
+    venue: "The Grand Palace, Mumbai",
+    icon: "💒",
+    desc: "Join us as two families come together to celebrate the union of Adarsh & Shreya in an intimate ceremony of blessings.",
   },
   {
     name: "Haldi Ceremony",
-    date: "December 11, 2026",
-    time: "10:00 AM Onwards",
-    venue: "Sunshine Terrace, Mumbai",
-    icon: "✨",
-    description: "A vibrant morning of turmeric rituals and blessings to usher in good fortune for the couple.",
-    color: "from-yellow-900/30 to-yellow-800/10",
-    borderColor: "border-yellow-700/30",
+    date: "July 1, 2026",
+    day: "Wednesday",
+    time: "11:00 AM Onwards",
+    venue: "The Grand Palace, Mumbai",
+    icon: "🌼",
+    desc: "A vibrant morning of turmeric rituals, folk music, and the warm glow of family blessings to herald the sacred day.",
   },
   {
     name: "Wedding Ceremony",
-    date: "December 12, 2026",
-    time: "5:00 PM Onwards",
+    date: "July 1, 2026",
+    day: "Wednesday",
+    time: "7:00 PM Onwards",
     venue: "The Grand Palace, Mumbai",
-    icon: "💍",
-    description: "The sacred union in a ceremony filled with ancient rituals, vows of eternal love, and grand celebration.",
-    color: "from-amber-900/30 to-amber-800/10",
-    borderColor: "border-amber-700/30",
+    icon: "🪔",
+    desc: "The sacred Saptapadi — seven vows, one soul. Witness the union under a canopy of flowers as Adarsh weds Shreya.",
   },
 ];
 
-interface RSVPData {
-  name: string;
-  attending: string;
-  guests: string;
-  message: string;
+const GALLERY_URLS = [
+  "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=75",
+  "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=400&q=75",
+  "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=75",
+  "https://images.unsplash.com/photo-1549416878-b1df28c9da68?w=400&q=75",
+  "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=400&q=75",
+  "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=400&q=75",
+  "https://images.unsplash.com/photo-1520854221256-17451cc331bf?w=400&q=75",
+  "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=400&q=75",
+];
+
+const STARS = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  top: `${Math.random() * 100}%`,
+  left: `${Math.random() * 100}%`,
+  size: 1 + Math.random() * 2,
+  dur: 2 + Math.random() * 4,
+  delay: Math.random() * 5,
+}));
+
+const PETALS = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  dur: 6 + Math.random() * 8,
+  delay: Math.random() * 8,
+  size: 14 + Math.random() * 10,
+  emoji: ["🌸", "🌺", "✿", "❀"][Math.floor(Math.random() * 4)],
+}));
+
+/* ─── SVG Crack Lines ─── */
+function CrackLines() {
+  return (
+    <svg
+      viewBox="0 0 120 120"
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      style={{ zIndex: 3 }}
+    >
+      <line x1="60" y1="60" x2="20" y2="20" stroke="#c9a84c" strokeWidth="1.5" strokeLinecap="round"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animation: "crackLine .4s ease forwards" }} />
+      <line x1="60" y1="60" x2="100" y2="15" stroke="#c9a84c" strokeWidth="1"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animationDelay: ".05s", animation: "crackLine .4s .05s ease forwards" }} />
+      <line x1="60" y1="60" x2="5" y2="70" stroke="#c9a84c" strokeWidth="1"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animation: "crackLine .4s .1s ease forwards" }} />
+      <line x1="60" y1="60" x2="115" y2="55" stroke="#c9a84c" strokeWidth="1.5"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animation: "crackLine .4s .08s ease forwards" }} />
+      <line x1="60" y1="60" x2="30" y2="110" stroke="#c9a84c" strokeWidth="1"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animation: "crackLine .4s .15s ease forwards" }} />
+      <line x1="60" y1="60" x2="95" y2="105" stroke="#c9a84c" strokeWidth="1.5"
+        style={{ strokeDasharray: 60, strokeDashoffset: 0, animation: "crackLine .4s .06s ease forwards" }} />
+    </svg>
+  );
 }
 
+/* ─── Wax Seal ─── */
+function WaxSeal({ breaking, onClick }: { breaking: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative flex items-center justify-center focus:outline-none ${breaking ? "seal-break" : "seal-pulse"}`}
+      style={{ width: 130, height: 130, cursor: breaking ? "default" : "pointer" }}
+      data-testid="wax-seal"
+      aria-label="Break the seal to open invitation"
+    >
+      {/* Outer ring */}
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          background: "radial-gradient(circle at 38% 38%, #9e2020 0%, #6b1414 40%, #4a0e0e 100%)",
+          boxShadow: "0 0 0 3px #c9a84c, 0 0 0 5px #6b1414, 0 8px 32px rgba(0,0,0,.7), inset 0 2px 4px rgba(255,200,100,.15)",
+        }}
+      />
+      {/* Inner decorative ring */}
+      <div
+        className="absolute rounded-full"
+        style={{
+          inset: 10,
+          border: "1px solid rgba(201,168,76,.5)",
+          borderRadius: "50%",
+        }}
+      />
+      <div
+        className="absolute rounded-full"
+        style={{
+          inset: 16,
+          border: "1px dashed rgba(201,168,76,.3)",
+          borderRadius: "50%",
+        }}
+      />
+      {/* Initials */}
+      <div className="relative z-10 text-center">
+        <span
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: "1.1rem",
+            color: "#e8c96d",
+            letterSpacing: "0.1em",
+            textShadow: "0 1px 3px rgba(0,0,0,.6)",
+            lineHeight: 1,
+          }}
+        >A & S</span>
+        <div style={{ width: 36, height: 1, background: "rgba(201,168,76,.5)", margin: "4px auto" }} />
+        <span
+          style={{
+            fontFamily: "'Montserrat', sans-serif",
+            fontSize: "0.45rem",
+            color: "rgba(201,168,76,.7)",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+          }}
+        >
+          2026
+        </span>
+      </div>
+      {/* Crack lines shown during break */}
+      {breaking && <CrackLines />}
+    </button>
+  );
+}
+
+/* ─── Countdown tile ─── */
+function CountdownTile({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div
+        className="flex items-center justify-center"
+        style={{
+          width: "clamp(64px, 16vw, 90px)",
+          height: "clamp(64px, 16vw, 90px)",
+          background: "linear-gradient(145deg, #1a0e07, #2a1508)",
+          border: "1px solid rgba(201,168,76,.35)",
+          boxShadow: "0 4px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(201,168,76,.1)",
+        }}
+      >
+        <span
+          className="gold-text"
+          style={{
+            fontFamily: "'Playfair Display', serif",
+            fontSize: "clamp(1.4rem, 4vw, 2.2rem)",
+            lineHeight: 1,
+          }}
+        >
+          {String(value).padStart(2, "0")}
+        </span>
+      </div>
+      <span
+        style={{
+          fontFamily: "'Montserrat', sans-serif",
+          fontSize: "0.6rem",
+          letterSpacing: "0.25em",
+          textTransform: "uppercase",
+          color: "rgba(201,168,76,.55)",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════ */
+
 export default function WeddingInvite() {
-  const [envelopeOpen, setEnvelopeOpen] = useState(false);
-  const [animatingEnvelope, setAnimatingEnvelope] = useState(false);
-  const [showContent, setShowContent] = useState(false);
-  const [petals, setPetals] = useState<number[]>([]);
-  const [rsvpData, setRsvpData] = useState<RSVPData>({ name: "", attending: "yes", guests: "1", message: "" });
-  const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
-  const [activeNav, setActiveNav] = useState("");
+  const [sealBreaking, setSealBreaking] = useState(false);
+  const [cardExit, setCardExit] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [navVisible, setNavVisible] = useState(false);
+  const [rsvpData, setRsvpData] = useState({ name: "", attending: "yes", guests: "2", message: "" });
+  const [rsvpDone, setRsvpDone] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timeLeft = useCountdown(weddingDate);
-  useScrollFade(showContent);
+  const timeLeft = useCountdown(WEDDING_DATE);
+  useReveal(inviteOpen);
 
-  const openInvite = useCallback(() => {
-    if (envelopeOpen) return;
-    setAnimatingEnvelope(true);
-    setTimeout(() => {
-      setEnvelopeOpen(true);
-      setShowContent(true);
-      document.body.style.overflow = "auto";
-
-      const petalCount = Array.from({ length: 18 }, (_, i) => i);
-      setPetals(petalCount);
-
-      if (audioRef.current) {
-        audioRef.current.volume = 0.25;
-        audioRef.current.play().catch(() => {});
-      }
-    }, 1200);
-  }, [envelopeOpen]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const sections = ["hero", "countdown", "story", "events", "gallery", "rsvp"];
-      let current = "";
-      for (const id of sections) {
-        const el = document.getElementById(id);
-        if (el && window.scrollY >= el.offsetTop - 100) current = id;
-      }
-      setActiveNav(current);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
+  /* lock scroll on entry screen */
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = "auto"; };
   }, []);
 
-  const handleRSVP = (e: React.FormEvent) => {
-    e.preventDefault();
-    setRsvpSubmitted(true);
-  };
+  /* nav visibility */
+  useEffect(() => {
+    if (!inviteOpen) return;
+    const handler = () => setNavVisible(window.scrollY > 80);
+    window.addEventListener("scroll", handler);
+    return () => window.removeEventListener("scroll", handler);
+  }, [inviteOpen]);
 
-  const scrollTo = (id: string) => {
+  function breakSeal() {
+    if (sealBreaking) return;
+    setSealBreaking(true);
+    // crack then fly away card
+    setTimeout(() => setCardExit(true), 600);
+    setTimeout(() => {
+      setInviteOpen(true);
+      document.body.style.overflow = "auto";
+      audioRef.current && (audioRef.current.volume = 0.2, audioRef.current.play().catch(() => {}));
+    }, 1350);
+  }
+
+  function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const pad = (n: number) => String(n).padStart(2, "0");
+  }
 
   return (
-    <div className="relative min-h-screen" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-      {/* Background music */}
+    <div style={{ fontFamily: "'Montserrat', sans-serif", background: "#0d0804", minHeight: "100vh" }}>
       <audio ref={audioRef} loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg" />
       </audio>
 
-      {/* Falling Petals */}
-      {showContent &&
-        petals.map((i) => (
-          <span
-            key={i}
-            className="petal"
-            style={{
-              left: `${Math.random() * 100}%`,
-              animationDuration: `${5 + Math.random() * 8}s`,
-              animationDelay: `${Math.random() * 6}s`,
-              fontSize: `${14 + Math.random() * 12}px`,
-              opacity: 0,
-            }}
-          >
-            {["🌸", "🌺", "✿", "❀", "🌹"][Math.floor(Math.random() * 5)]}
-          </span>
-        ))}
-
-      {/* ENVELOPE SCREEN */}
-      {!envelopeOpen && (
-        <div
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center cursor-pointer ${
-            animatingEnvelope ? "envelope-exit pointer-events-none" : ""
-          }`}
+      {/* ── Petals (after open) ── */}
+      {inviteOpen && PETALS.map((p) => (
+        <span
+          key={p.id}
+          className="petal"
           style={{
-            background: "linear-gradient(135deg, #2c1810 0%, #1a0f08 30%, #0d0703 60%, #1a0f08 100%)",
+            left: p.left,
+            fontSize: p.size,
+            animationDuration: `${p.dur}s`,
+            animationDelay: `${p.delay}s`,
           }}
-          onClick={openInvite}
-          data-testid="envelope-screen"
+        >
+          {p.emoji}
+        </span>
+      ))}
+
+      {/* ════════════ ENTRY CARD ════════════ */}
+      {!inviteOpen && (
+        <div
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${cardExit ? "card-exit pointer-events-none" : ""}`}
+          style={{
+            background: "radial-gradient(ellipse at 50% 30%, #1e0e06 0%, #0d0804 70%)",
+          }}
         >
           {/* Stars */}
-          {Array.from({ length: 50 }).map((_, i) => (
+          {STARS.map((s) => (
             <div
-              key={i}
-              className="absolute rounded-full bg-amber-200"
+              key={s.id}
+              className="absolute rounded-full"
               style={{
-                width: `${1 + Math.random() * 2}px`,
-                height: `${1 + Math.random() * 2}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-                animation: `sparkle ${2 + Math.random() * 4}s ease-in-out ${Math.random() * 4}s infinite`,
+                width: s.size, height: s.size,
+                top: s.top, left: s.left,
+                background: "#f0e6cc",
+                animation: `sparkTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite`,
                 opacity: 0,
               }}
             />
           ))}
 
           {/* Corner ornaments */}
-          <div className="absolute top-6 left-6 text-amber-400/40 text-4xl select-none">✦</div>
-          <div className="absolute top-6 right-6 text-amber-400/40 text-4xl select-none">✦</div>
-          <div className="absolute bottom-6 left-6 text-amber-400/40 text-4xl select-none">✦</div>
-          <div className="absolute bottom-6 right-6 text-amber-400/40 text-4xl select-none">✦</div>
-
-          {/* Decorative border */}
-          <div
-            className="absolute inset-8 rounded pointer-events-none"
-            style={{ border: "1px solid rgba(201,168,76,0.2)" }}
-          />
-          <div
-            className="absolute inset-10 rounded pointer-events-none"
-            style={{ border: "1px solid rgba(201,168,76,0.08)" }}
-          />
-
-          {/* Envelope SVG */}
-          <div className="float-up mb-8">
-            <div className="relative flex items-center justify-center" style={{ width: 280, height: 200 }}>
-              {/* Envelope body */}
-              <svg width="280" height="200" viewBox="0 0 280 200" fill="none">
-                {/* Envelope body */}
-                <rect x="10" y="60" width="260" height="130" rx="4" fill="#3d2410" stroke="#c9a84c" strokeWidth="1.5" />
-                {/* Envelope flap */}
-                <path d="M10 60 L140 130 L270 60 Z" fill="#4d2e15" stroke="#c9a84c" strokeWidth="1.5" />
-                {/* Envelope bottom fold lines */}
-                <path d="M10 190 L95 125" stroke="#c9a84c" strokeWidth="0.8" strokeOpacity="0.5" />
-                <path d="M270 190 L185 125" stroke="#c9a84c" strokeWidth="0.8" strokeOpacity="0.5" />
-                {/* Wax seal area */}
-                <circle cx="140" cy="125" r="32" fill="#8B1A1A" stroke="#c9a84c" strokeWidth="2" />
-                <circle cx="140" cy="125" r="26" fill="none" stroke="#c9a84c" strokeWidth="1" strokeDasharray="3 3" />
-                <text x="140" y="130" textAnchor="middle" fill="#c9a84c" fontSize="16" fontFamily="serif">A&S</text>
-                {/* Decorative lines on envelope */}
-                <line x1="80" y1="100" x2="200" y2="100" stroke="#c9a84c" strokeWidth="0.5" strokeOpacity="0.3" />
-              </svg>
+          {["top-5 left-5", "top-5 right-5", "bottom-5 left-5", "bottom-5 right-5"].map((pos, i) => (
+            <div key={i} className={`absolute ${pos} text-amber-400/25 text-4xl select-none hidden sm:block`}>
+              {["❧", "❧", "❧", "❧"][i]}
             </div>
-          </div>
+          ))}
 
-          {/* Text */}
-          <div className="text-center mb-10 px-8">
-            <p
-              className="text-amber-200/60 tracking-[0.3em] text-xs uppercase mb-4"
-              style={{ fontFamily: "'Montserrat', sans-serif" }}
-            >
+          {/* Double border frame */}
+          <div className="absolute inset-6 pointer-events-none hidden sm:block"
+            style={{ border: "1px solid rgba(201,168,76,.15)" }} />
+          <div className="absolute inset-8 pointer-events-none hidden sm:block"
+            style={{ border: "1px solid rgba(201,168,76,.07)" }} />
+
+          {/* The card */}
+          <div
+            className="relative flex flex-col items-center justify-between float-anim"
+            style={{
+              width: "min(340px, 86vw)",
+              padding: "48px 36px",
+              background: "linear-gradient(160deg, #1c0e07 0%, #150b05 60%, #0f0703 100%)",
+              border: "1px solid rgba(201,168,76,.3)",
+              boxShadow: "0 0 60px rgba(0,0,0,.8), 0 0 0 1px rgba(201,168,76,.08), inset 0 1px 0 rgba(201,168,76,.1)",
+            }}
+          >
+            {/* Top ornament */}
+            <div className="flex items-center gap-3 mb-6 w-full">
+              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,transparent,rgba(201,168,76,.4))" }} />
+              <span style={{ color: "#c9a84c", fontSize: "0.7rem", letterSpacing: "0.3em" }}>✦</span>
+              <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,rgba(201,168,76,.4),transparent)" }} />
+            </div>
+
+            {/* Opening text */}
+            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.5)", textTransform: "uppercase", marginBottom: 20 }}>
               You are cordially invited to
             </p>
-            <h1
-              className="gold-shimmer mb-3"
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "clamp(2rem, 6vw, 3.5rem)",
-                lineHeight: 1.2,
-              }}
-            >
-              Adarsh & Shreya
-            </h1>
-            <p
-              className="text-amber-200/50 tracking-[0.2em] text-sm"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem" }}
-            >
-              A Wedding Celebration
-            </p>
-          </div>
 
-          {/* Click prompt */}
-          <div className="flex flex-col items-center gap-3">
-            <div
-              className="wax-pulse rounded-full px-8 py-3 cursor-pointer select-none"
-              style={{
-                background: "linear-gradient(135deg, #8B1A1A, #c9a84c, #8B1A1A)",
-                border: "1px solid #c9a84c",
-              }}
-            >
-              <span
-                className="text-amber-100 tracking-[0.25em] text-xs uppercase"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                Open Invitation
-              </span>
+            {/* Names */}
+            <div className="text-center mb-2">
+              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(2.8rem,9vw,3.8rem)", lineHeight: 1.1, color: "#e8c96d", textShadow: "0 0 30px rgba(201,168,76,.3)" }}>
+                Adarsh
+              </h1>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", color: "rgba(201,168,76,.5)", letterSpacing: "0.3em", margin: "4px 0" }}>weds</p>
+              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(2.8rem,9vw,3.8rem)", lineHeight: 1.1, color: "#e8c96d", textShadow: "0 0 30px rgba(201,168,76,.3)" }}>
+                Shreya
+              </h1>
             </div>
-            <p className="text-amber-400/40 text-xs tracking-widest animate-pulse">Click to reveal</p>
+
+            {/* Date */}
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", color: "rgba(240,230,204,.5)", letterSpacing: "0.15em", marginBottom: 8 }}>
+              1st July 2026
+            </p>
+            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.35)", textTransform: "uppercase", marginBottom: 32 }}>
+              The Grand Palace, Mumbai
+            </p>
+
+            {/* Wax Seal */}
+            <WaxSeal breaking={sealBreaking} onClick={breakSeal} />
+
+            {/* Bottom label */}
+            <p
+              className="mt-6 animate-pulse"
+              style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}
+            >
+              {sealBreaking ? "Opening…" : "Tap seal to open"}
+            </p>
           </div>
         </div>
       )}
 
-      {/* MAIN CONTENT */}
-      {showContent && (
-        <div className={envelopeOpen ? "content-reveal" : "opacity-0"}>
+      {/* ════════════ FULL INVITE ════════════ */}
+      {inviteOpen && (
+        <div style={{ animation: "fadeIn 0.8s ease forwards" }}>
 
-          {/* Floating Navigation */}
+          {/* Sticky nav */}
           <nav
-            className="wedding-nav fixed top-0 left-0 right-0 z-40 border-b"
-            style={{
-              background: "rgba(245, 238, 220, 0.85)",
-              borderColor: "rgba(201,168,76,0.2)",
-            }}
+            className="sticky-nav"
+            style={{ opacity: navVisible ? 1 : 0, pointerEvents: navVisible ? "auto" : "none", transition: "opacity .4s" }}
           >
-            <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-              <span
-                className="gold-shimmer text-lg"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                A & P
-              </span>
-              <div className="hidden md:flex items-center gap-6">
-                {["story", "events", "gallery", "rsvp"].map((id) => (
+            <div className="max-w-5xl mx-auto px-6 h-13 flex items-center justify-between" style={{ height: 52 }}>
+              <span style={{ fontFamily: "'Great Vibes', cursive", fontSize: "1.5rem", color: "#e8c96d" }}>A & S</span>
+              <div className="hidden md:flex gap-7">
+                {[["story", "Story"], ["countdown", "Countdown"], ["events", "Events"], ["venue", "Venue"], ["rsvp", "RSVP"]].map(([id, label]) => (
                   <button
                     key={id}
                     onClick={() => scrollTo(id)}
-                    className="text-xs tracking-widest uppercase transition-colors hover:text-amber-600"
-                    style={{
-                      fontFamily: "'Montserrat', sans-serif",
-                      color: activeNav === id ? "#c9a84c" : "#8a7550",
-                    }}
+                    style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.6rem", letterSpacing: "0.25em", textTransform: "uppercase", color: "rgba(201,168,76,.6)", background: "none", border: "none", cursor: "pointer" }}
+                    className="hover:text-amber-300 transition-colors"
                     data-testid={`nav-${id}`}
-                  >
-                    {id}
-                  </button>
+                  >{label}</button>
                 ))}
               </div>
-              <div className="text-amber-600/60 text-xs tracking-widest" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                Dec 12, 2026
-              </div>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "0.9rem", color: "rgba(201,168,76,.4)" }}>01·07·26</span>
             </div>
           </nav>
 
-          {/* HERO SECTION */}
+          {/* ── HERO ── */}
           <section
             id="hero"
-            className="relative min-h-screen flex items-center justify-center overflow-hidden"
             style={{
-              background: "linear-gradient(135deg, #1a0f08 0%, #2c1810 40%, #1a0f08 100%)",
+              minHeight: "100vh",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              position: "relative", overflow: "hidden",
+              background: "radial-gradient(ellipse at 50% 40%, #200f07 0%, #0d0804 70%)",
+              padding: "80px 24px",
             }}
           >
-            {/* Background pattern */}
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: `radial-gradient(circle at 25% 25%, #c9a84c 0%, transparent 50%), radial-gradient(circle at 75% 75%, #c9a84c 0%, transparent 50%)`,
-              }}
-            />
-
-            {/* Stars */}
-            {Array.from({ length: 40 }).map((_, i) => (
-              <div
-                key={i}
-                className="absolute rounded-full bg-amber-200"
-                style={{
-                  width: `${1 + Math.random() * 2}px`,
-                  height: `${1 + Math.random() * 2}px`,
-                  top: `${Math.random() * 100}%`,
-                  left: `${Math.random() * 100}%`,
-                  animation: `sparkle ${2 + Math.random() * 4}s ease-in-out ${Math.random() * 4}s infinite`,
-                  opacity: 0,
-                }}
-              />
+            {/* bg stars */}
+            {STARS.slice(0, 30).map((s) => (
+              <div key={s.id} className="absolute rounded-full"
+                style={{ width: s.size, height: s.size, top: s.top, left: s.left, background: "#f0e6cc", animation: `sparkTwinkle ${s.dur}s ${s.delay}s ease-in-out infinite`, opacity: 0 }} />
             ))}
 
-            {/* Corner ornaments */}
-            <div className="absolute top-24 left-8 text-amber-400/30 text-5xl select-none hidden md:block">❧</div>
-            <div className="absolute top-24 right-8 text-amber-400/30 text-5xl select-none hidden md:block" style={{ transform: "scaleX(-1)" }}>❧</div>
+            {/* Ganesh mantra */}
+            <p className="fade-up text-center mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1rem,3vw,1.4rem)", color: "rgba(201,168,76,.6)", letterSpacing: "0.1em", animationDelay: ".1s" }}>
+              ॐ श्री गणेशाय नमः
+            </p>
 
-            {/* Decorative border */}
-            <div
-              className="absolute inset-8 pointer-events-none hidden md:block"
-              style={{ border: "1px solid rgba(201,168,76,0.15)" }}
-            />
+            <p className="fade-up text-center mb-6" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.4em", color: "rgba(201,168,76,.4)", textTransform: "uppercase", animationDelay: ".25s" }}>
+              With the blessings of the almighty
+            </p>
 
-            <div className="relative text-center px-6 max-w-3xl mx-auto">
-              <p
-                className="text-amber-300/60 tracking-[0.4em] text-xs uppercase mb-8 fade-in-up"
-                style={{ fontFamily: "'Montserrat', sans-serif", animationDelay: "0.1s" }}
-              >
-                Together with their families
+            {/* Couple names */}
+            <div className="text-center fade-up" style={{ animationDelay: ".4s" }}>
+              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(3.5rem, 12vw, 7rem)", lineHeight: 1.05, color: "#e8c96d", textShadow: "0 0 60px rgba(201,168,76,.25)" }}>
+                Adarsh
+              </h1>
+              <div className="gold-divider my-3">
+                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", color: "rgba(201,168,76,.5)" }}>weds</span>
+              </div>
+              <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(3.5rem, 12vw, 7rem)", lineHeight: 1.05, color: "#e8c96d", textShadow: "0 0 60px rgba(201,168,76,.25)" }}>
+                Shreya
+              </h1>
+            </div>
+
+            {/* Date & Venue */}
+            <div className="text-center mt-8 fade-up" style={{ animationDelay: ".6s" }}>
+              <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1rem,3vw,1.4rem)", color: "rgba(240,230,204,.7)", letterSpacing: "0.1em" }}>
+                1<sup>st</sup> July 2026
               </p>
-
-              <div className="mb-6 fade-in-up" style={{ animationDelay: "0.3s" }}>
-                <h1
-                  className="gold-shimmer leading-tight"
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: "clamp(3rem, 10vw, 6rem)",
-                    letterSpacing: "-0.01em",
-                  }}
-                >
-                  Adarsh
-                </h1>
-                <div className="my-3 flex items-center justify-center gap-4">
-                  <span
-                    className="text-amber-400/50"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem" }}
-                  >
-                    &
-                  </span>
-                  <div className="h-px w-16 bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
-                  <span
-                    className="text-amber-400/50"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.5rem" }}
-                  >
-                    &
-                  </span>
-                </div>
-                <h1
-                  className="gold-shimmer leading-tight"
-                  style={{
-                    fontFamily: "'Playfair Display', serif",
-                    fontSize: "clamp(3rem, 10vw, 6rem)",
-                    letterSpacing: "-0.01em",
-                    animationDelay: "0.5s",
-                  }}
-                >
-                  Shreya
-                </h1>
-              </div>
-
-              <div className="gold-divider max-w-xs mx-auto mb-8 fade-in-up" style={{ animationDelay: "0.5s" }}>
-                <span className="text-amber-400/60 text-xs tracking-widest whitespace-nowrap">— ✦ —</span>
-              </div>
-
-              <div className="fade-in-up" style={{ animationDelay: "0.7s" }}>
-                <p
-                  className="text-amber-200/80 tracking-[0.2em] mb-2"
-                  style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.4rem" }}
-                >
-                  December 12, 2026
-                </p>
-                <p className="text-amber-300/50 tracking-[0.15em] text-xs uppercase" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  The Grand Palace, Mumbai
-                </p>
-              </div>
-
-              <div className="mt-12 fade-in-up" style={{ animationDelay: "0.9s" }}>
-                <button
-                  onClick={() => scrollTo("countdown")}
-                  className="inline-flex items-center gap-2 text-amber-400/60 text-xs tracking-widest uppercase hover:text-amber-300 transition-colors animate-bounce"
-                  data-testid="scroll-down-btn"
-                >
-                  <span>Scroll</span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M8 12L2 6h12z" />
-                  </svg>
-                </button>
-              </div>
+              <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.4)", textTransform: "uppercase", marginTop: 8 }}>
+                The Grand Palace, Mumbai
+              </p>
             </div>
+
+            {/* Scroll prompt */}
+            <button
+              onClick={() => scrollTo("story")}
+              className="mt-16 fade-up flex flex-col items-center gap-2"
+              style={{ background: "none", border: "none", cursor: "pointer", animationDelay: ".9s" }}
+              data-testid="scroll-hero"
+            >
+              <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>Scroll</span>
+              <div style={{ width: 1, height: 40, background: "linear-gradient(180deg,rgba(201,168,76,.4),transparent)" }} />
+            </button>
           </section>
 
-          {/* COUNTDOWN SECTION */}
-          <section
-            id="countdown"
-            className="section-padding text-center"
-            style={{ background: "linear-gradient(180deg, #f5eedc 0%, #faf6ea 100%)" }}
-          >
-            <div className="max-w-4xl mx-auto">
-              <div className="scroll-fade mb-4">
-                <p className="text-amber-600/60 tracking-[0.3em] text-xs uppercase" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Counting down to
-                </p>
-              </div>
-              <div className="scroll-fade mb-12">
-                <h2
-                  className="text-amber-800"
-                  style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem, 4vw, 2.8rem)" }}
-                >
-                  Our Special Day
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto scroll-fade">
-                {[
-                  { label: "Days", value: timeLeft.days },
-                  { label: "Hours", value: timeLeft.hours },
-                  { label: "Minutes", value: timeLeft.minutes },
-                  { label: "Seconds", value: timeLeft.seconds },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center"
-                    data-testid={`countdown-${label.toLowerCase()}`}
-                  >
-                    <div
-                      className="relative w-full aspect-square max-w-28 flex items-center justify-center rounded-sm mb-3"
-                      style={{
-                        background: "linear-gradient(135deg, #2c1810, #3d2410)",
-                        border: "1px solid rgba(201,168,76,0.4)",
-                        boxShadow: "0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(201,168,76,0.1)",
-                      }}
-                    >
-                      <span
-                        className="gold-shimmer"
-                        style={{
-                          fontFamily: "'Playfair Display', serif",
-                          fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
-                          lineHeight: 1,
-                        }}
-                      >
-                        {pad(value)}
-                      </span>
-                    </div>
-                    <span
-                      className="text-amber-700/60 tracking-[0.2em] uppercase"
-                      style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.6rem" }}
-                    >
-                      {label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="scroll-fade mt-12">
-                <div
-                  className="inline-block px-8 py-3 rounded-sm"
-                  style={{
-                    border: "1px solid rgba(201,168,76,0.3)",
-                    background: "rgba(201,168,76,0.05)",
-                  }}
-                >
-                  <p
-                    className="text-amber-700/70 tracking-widest text-xs italic"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem" }}
-                  >
-                    "Every love story is beautiful, but ours is my favourite."
-                  </p>
-                </div>
-              </div>
+          {/* ── MARQUEE STRIP ── */}
+          <div style={{ overflow: "hidden", borderTop: "1px solid rgba(201,168,76,.1)", borderBottom: "1px solid rgba(201,168,76,.1)", padding: "4px 0", background: "#0a0604" }}>
+            <div className="marquee-track">
+              {[...GALLERY_URLS, ...GALLERY_URLS].map((url, i) => (
+                <img
+                  key={i}
+                  src={url}
+                  alt=""
+                  loading="lazy"
+                  style={{ width: 120, height: 80, objectFit: "cover", flexShrink: 0, marginRight: 4, opacity: 0.7 }}
+                />
+              ))}
             </div>
-          </section>
+          </div>
 
-          {/* OUR STORY SECTION */}
+          {/* ── FAMILY BLESSINGS / STORY ── */}
           <section
             id="story"
-            className="section-padding"
-            style={{ background: "linear-gradient(180deg, #1a0f08 0%, #2c1810 100%)" }}
+            className="invite-section"
+            style={{ background: "linear-gradient(180deg,#0d0804 0%,#120a05 100%)" }}
           >
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-16 scroll-fade">
-                <p className="text-amber-400/50 tracking-[0.3em] text-xs uppercase mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  How it began
-                </p>
-                <h2
-                  className="gold-shimmer mb-4"
-                  style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 5vw, 3rem)" }}
-                >
-                  Our Story
-                </h2>
-                <div className="gold-divider max-w-xs mx-auto">
-                  <span className="text-amber-500/40 text-xs">✦</span>
-                </div>
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="reveal mb-3" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>With the heavenly blessings of</p>
+
+              <div className="reveal mb-8" style={{ transitionDelay: ".1s" }}>
+                <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.5rem,4vw,2.2rem)", color: "#e8c96d", marginBottom: 6 }}>Our Story</h2>
+                <div className="gold-divider"><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8">
+              {/* Family names */}
+              <div className="reveal mb-12 grid sm:grid-cols-2 gap-8" style={{ transitionDelay: ".15s" }}>
                 {[
-                  {
-                    year: "2019",
-                    title: "First Meeting",
-                    desc: "Two souls met at a friend's gathering, exchanged glances across a crowded room, and the universe conspired in ways neither could have imagined.",
-                    icon: "✨",
-                  },
-                  {
-                    year: "2021",
-                    title: "Falling in Love",
-                    desc: "Through countless conversations, shared dreams, and stolen moments — love quietly, beautifully, inevitably found its way into both their hearts.",
-                    icon: "💫",
-                  },
-                  {
-                    year: "2024",
-                    title: "The Proposal",
-                    desc: "Under a sky full of stars, Adarsh asked the question that changed everything. Shreya said yes, and a lifetime of together began right there.",
-                    icon: "💍",
-                  },
-                ].map((item, idx) => (
-                  <div
-                    key={item.year}
-                    className="scroll-fade text-center"
-                    style={{ transitionDelay: `${idx * 0.15}s` }}
-                    data-testid={`story-card-${idx}`}
-                  >
-                    <div
-                      className="relative p-8 rounded-sm h-full"
-                      style={{
-                        background: "rgba(201,168,76,0.04)",
-                        border: "1px solid rgba(201,168,76,0.15)",
-                      }}
-                    >
-                      <div className="text-3xl mb-4">{item.icon}</div>
-                      <p
-                        className="gold-shimmer text-sm tracking-widest mb-3"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      >
-                        {item.year}
-                      </p>
-                      <h3
-                        className="text-amber-200 mb-4"
-                        style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.3rem" }}
-                      >
-                        {item.title}
-                      </h3>
-                      <p
-                        className="text-amber-300/55 leading-relaxed text-sm"
-                        style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", lineHeight: 1.8 }}
-                      >
-                        {item.desc}
-                      </p>
-                    </div>
+                  { family: "Groom's Family", names: ["Late Shri Ramesh Kumar", "Smt. Sunita Sharma"], from: "Lucknow, UP" },
+                  { family: "Bride's Family", names: ["Shri Vijay Mehta", "Smt. Kavita Mehta"], from: "Mumbai, MH" },
+                ].map((f, i) => (
+                  <div key={i} className="text-center p-6"
+                    style={{ border: "1px solid rgba(201,168,76,.15)", background: "rgba(201,168,76,.02)" }}>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.45)", textTransform: "uppercase", marginBottom: 12 }}>{f.family}</p>
+                    {f.names.map((n) => (
+                      <p key={n} style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", color: "rgba(240,230,204,.75)", lineHeight: 1.8 }}>{n}</p>
+                    ))}
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.2em", color: "rgba(201,168,76,.35)", marginTop: 8 }}>{f.from}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Story milestones */}
+              <div className="grid sm:grid-cols-3 gap-6">
+                {[
+                  { year: "2020", title: "First Meeting", icon: "✨", desc: "Two souls met across a room full of people, and the universe quietly smiled." },
+                  { year: "2022", title: "Falling in Love", icon: "💫", desc: "Through shared dreams and countless conversations, love found its way home." },
+                  { year: "2025", title: "The Proposal", icon: "💍", desc: "Under a sky full of stars, Adarsh asked, and Shreya said yes." },
+                ].map((s, i) => (
+                  <div key={s.year} className="reveal event-card p-6 text-center" style={{ transitionDelay: `${i * 0.12}s` }} data-testid={`story-${i}`}>
+                    <div style={{ fontSize: "1.8rem", marginBottom: 10 }}>{s.icon}</div>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.3em", color: "rgba(201,168,76,.55)", textTransform: "uppercase", marginBottom: 6 }}>{s.year}</p>
+                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.1rem", color: "#e8c96d", marginBottom: 10 }}>{s.title}</h3>
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", color: "rgba(240,230,204,.55)", lineHeight: 1.8 }}>{s.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* EVENTS SECTION */}
+          {/* ── COUNTDOWN ── */}
+          <section
+            id="countdown"
+            className="invite-section"
+            style={{ background: "linear-gradient(180deg,#100806 0%,#0d0804 100%)" }}
+          >
+            <div className="max-w-3xl mx-auto text-center">
+              <p className="reveal mb-3" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>
+                Counting down
+              </p>
+              <h2 className="reveal mb-2" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem,5vw,2.8rem)", color: "#e8c96d", transitionDelay: ".1s" }}>
+                Until We Say I Do
+              </h2>
+              <p className="reveal mb-10" style={{ fontFamily: "'Cormorant Garamond', serif', serif", fontSize: "1.05rem", color: "rgba(240,230,204,.4)", letterSpacing: "0.1em", transitionDelay: ".15s" }}>
+                1<sup>st</sup> July 2026 · 7:00 PM
+              </p>
+
+              <div className="reveal flex justify-center gap-4 sm:gap-8 mb-12" style={{ transitionDelay: ".2s" }} data-testid="countdown-timer">
+                <CountdownTile value={timeLeft.days} label="Days" />
+                <CountdownTile value={timeLeft.hours} label="Hours" />
+                <CountdownTile value={timeLeft.minutes} label="Min" />
+                <CountdownTile value={timeLeft.seconds} label="Sec" />
+              </div>
+
+              <blockquote className="reveal" style={{ transitionDelay: ".3s" }}>
+                <div className="gold-divider mb-6"><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
+                <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "clamp(1.1rem,2.5vw,1.5rem)", fontStyle: "italic", color: "rgba(240,230,204,.55)", lineHeight: 1.9 }}>
+                  "Where you are, that is home."<br />
+                  <span style={{ fontSize: "0.7em", letterSpacing: "0.2em", fontStyle: "normal", color: "rgba(201,168,76,.4)" }}>— E.B. White</span>
+                </p>
+              </blockquote>
+            </div>
+          </section>
+
+          {/* ── EVENTS ── */}
           <section
             id="events"
-            className="section-padding"
-            style={{ background: "linear-gradient(180deg, #faf6ea 0%, #f5eedc 100%)" }}
+            className="invite-section"
+            style={{ background: "linear-gradient(180deg,#0a0503 0%,#110804 100%)" }}
           >
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-16 scroll-fade">
-                <p className="text-amber-600/50 tracking-[0.3em] text-xs uppercase mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Join us for
-                </p>
-                <h2
-                  className="text-amber-800 mb-4"
-                  style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 5vw, 3rem)" }}
-                >
-                  Wedding Events
+            <div className="max-w-4xl mx-auto w-full">
+              <div className="text-center mb-16">
+                <p className="reveal mb-3" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>Join us for</p>
+                <h2 className="reveal mb-4" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem,5vw,2.8rem)", color: "#e8c96d", transitionDelay: ".1s" }}>
+                  The Celebrations
                 </h2>
-                <div className="gold-divider max-w-xs mx-auto">
-                  <span className="text-amber-500/40 text-xs">✦</span>
-                </div>
+                <div className="reveal gold-divider" style={{ transitionDelay: ".15s" }}><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-8">
-                {events.map((event, idx) => (
+              <div className="grid sm:grid-cols-3 gap-6">
+                {EVENTS.map((ev, i) => (
                   <div
-                    key={event.name}
-                    className="scroll-fade"
-                    style={{ transitionDelay: `${idx * 0.15}s` }}
-                    data-testid={`event-card-${idx}`}
+                    key={ev.name}
+                    className="reveal event-card p-8"
+                    style={{ transitionDelay: `${i * 0.15}s` }}
+                    data-testid={`event-${i}`}
                   >
-                    <div
-                      className={`p-8 h-full rounded-sm bg-gradient-to-b ${event.color} border ${event.borderColor}`}
-                      style={{ background: "white" }}
-                    >
-                      <div className="text-4xl mb-6">{event.icon}</div>
-                      <h3
-                        className="text-amber-800 mb-4"
-                        style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem" }}
-                      >
-                        {event.name}
-                      </h3>
+                    <div style={{ fontSize: "2.2rem", marginBottom: 16 }}>{ev.icon}</div>
+                    <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.25rem", color: "#e8c96d", marginBottom: 16 }}>{ev.name}</h3>
 
-                      <div className="space-y-3 mb-6">
-                        <div className="flex items-start gap-3">
-                          <span className="text-amber-500 mt-0.5">📅</span>
-                          <div>
-                            <p className="text-amber-800/80 text-sm font-medium" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                              {event.date}
-                            </p>
-                            <p className="text-amber-600/60 text-xs" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                              {event.time}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <span className="text-amber-500 mt-0.5">📍</span>
-                          <p className="text-amber-700/70 text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                            {event.venue}
-                          </p>
-                        </div>
-                      </div>
-
-                      <p
-                        className="text-amber-700/60 leading-relaxed"
-                        style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", lineHeight: 1.8 }}
-                      >
-                        {event.description}
-                      </p>
-
-                      <div
-                        className="mt-6 pt-6"
-                        style={{ borderTop: "1px solid rgba(201,168,76,0.2)" }}
-                      >
-                        <span className="text-amber-600/50 tracking-widest text-xs uppercase" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                          Black Tie Optional
-                        </span>
-                      </div>
+                    <div style={{ borderTop: "1px solid rgba(201,168,76,.15)", paddingTop: 16, marginBottom: 16 }}>
+                      <p style={{ fontFamily: "'Playfair Display', serif", fontSize: "1rem", color: "rgba(240,230,204,.8)", marginBottom: 3 }}>{ev.date}</p>
+                      <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.2em", color: "rgba(201,168,76,.5)", textTransform: "uppercase" }}>{ev.day}</p>
                     </div>
+
+                    <div style={{ display: "flex", gap: 8, marginBottom: 8, alignItems: "flex-start" }}>
+                      <span style={{ fontSize: "0.8rem", marginTop: 2 }}>🕐</span>
+                      <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.65rem", color: "rgba(240,230,204,.55)", letterSpacing: "0.05em" }}>{ev.time}</p>
+                    </div>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "flex-start" }}>
+                      <span style={{ fontSize: "0.8rem", marginTop: 2 }}>📍</span>
+                      <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.65rem", color: "rgba(240,230,204,.55)", letterSpacing: "0.05em" }}>{ev.venue}</p>
+                    </div>
+
+                    <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", color: "rgba(240,230,204,.45)", lineHeight: 1.8 }}>{ev.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </section>
 
-          {/* GALLERY SECTION */}
+          {/* ── VENUE ── */}
           <section
-            id="gallery"
-            className="section-padding"
-            style={{ background: "linear-gradient(180deg, #1a0f08 0%, #2c1810 100%)" }}
+            id="venue"
+            className="invite-section"
+            style={{ background: "linear-gradient(180deg,#0d0804 0%,#0a0503 100%)" }}
           >
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-16 scroll-fade">
-                <p className="text-amber-400/50 tracking-[0.3em] text-xs uppercase mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Moments together
+            <div className="max-w-3xl mx-auto w-full text-center">
+              <p className="reveal mb-3" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>Where we celebrate</p>
+              <h2 className="reveal mb-4" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem,5vw,2.8rem)", color: "#e8c96d", transitionDelay: ".1s" }}>
+                The Venue
+              </h2>
+              <div className="reveal gold-divider mb-6" style={{ transitionDelay: ".15s" }}><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
+
+              <div className="reveal mb-4" style={{ transitionDelay: ".2s" }}>
+                <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.4rem", color: "#e8c96d", marginBottom: 4 }}>The Grand Palace</h3>
+                <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.6rem", letterSpacing: "0.2em", color: "rgba(201,168,76,.45)", textTransform: "uppercase" }}>
+                  Marine Drive · Mumbai · Maharashtra
                 </p>
-                <h2
-                  className="gold-shimmer mb-4"
-                  style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 5vw, 3rem)" }}
-                >
-                  Our Gallery
-                </h2>
-                <div className="gold-divider max-w-xs mx-auto">
-                  <span className="text-amber-500/40 text-xs">✦</span>
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 scroll-fade">
-                {galleryImages.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`gallery-item ${img.className}`}
-                    style={{
-                      height: img.className.includes("row-span-2") ? "420px" : "200px",
-                      border: "1px solid rgba(201,168,76,0.2)",
-                    }}
-                    data-testid={`gallery-item-${idx}`}
-                  >
-                    <img src={img.src} alt={img.alt} loading="lazy" />
-                  </div>
-                ))}
+              {/* Map iframe */}
+              <div
+                className="reveal"
+                style={{
+                  transitionDelay: ".25s",
+                  border: "1px solid rgba(201,168,76,.25)",
+                  overflow: "hidden",
+                  height: 320,
+                  position: "relative",
+                }}
+                data-testid="venue-map"
+              >
+                <iframe
+                  src="https://maps.google.com/maps?q=Marine+Drive,+Mumbai&t=&z=14&ie=UTF8&iwloc=&output=embed"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, filter: "invert(90%) hue-rotate(180deg) contrast(0.85) brightness(0.9)" }}
+                  loading="lazy"
+                  title="Venue Map"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
               </div>
+
+              <p className="reveal mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(240,230,204,.45)", lineHeight: 1.8, transitionDelay: ".3s" }}>
+                Nestled along the golden shore of the Arabian Sea, The Grand Palace offers an evening of timeless elegance for the celebration of a lifetime.
+              </p>
             </div>
           </section>
 
-          {/* RSVP SECTION */}
+          {/* ── GALLERY marquee ── */}
+          <div style={{ overflow: "hidden", padding: "4px 0", borderTop: "1px solid rgba(201,168,76,.08)", borderBottom: "1px solid rgba(201,168,76,.08)", background: "#080402" }}>
+            <div className="marquee-track" style={{ animationDirection: "reverse" }}>
+              {[...GALLERY_URLS, ...GALLERY_URLS].map((url, i) => (
+                <img key={i} src={url} alt="" loading="lazy" style={{ width: 160, height: 110, objectFit: "cover", flexShrink: 0, marginRight: 4, opacity: 0.6 }} />
+              ))}
+            </div>
+          </div>
+
+          {/* ── RSVP ── */}
           <section
             id="rsvp"
-            className="section-padding text-center"
-            style={{ background: "linear-gradient(180deg, #f5eedc 0%, #faf6ea 100%)" }}
+            className="invite-section"
+            style={{ background: "linear-gradient(180deg,#0a0503 0%,#0d0804 100%)" }}
           >
-            <div className="max-w-2xl mx-auto">
-              <div className="scroll-fade mb-4">
-                <p className="text-amber-600/50 tracking-[0.3em] text-xs uppercase" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                  Kindly reply by November 1, 2026
-                </p>
-              </div>
-              <div className="scroll-fade mb-12">
-                <h2
-                  className="text-amber-800 mb-2"
-                  style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2rem, 5vw, 3rem)" }}
-                >
-                  RSVP
-                </h2>
-                <p
-                  className="text-amber-700/60 italic"
-                  style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem" }}
-                >
-                  We would be honored to celebrate with you
+            <div className="max-w-xl mx-auto w-full">
+              <div className="text-center mb-12">
+                <p className="reveal mb-3" style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.55rem", letterSpacing: "0.35em", color: "rgba(201,168,76,.4)", textTransform: "uppercase" }}>Kindly reply by 1st June 2026</p>
+                <h2 className="reveal mb-2" style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(1.8rem,5vw,2.8rem)", color: "#e8c96d", transitionDelay: ".1s" }}>RSVP</h2>
+                <p className="reveal" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.05rem", fontStyle: "italic", color: "rgba(240,230,204,.4)", transitionDelay: ".15s" }}>
+                  We would be honoured to celebrate with you
                 </p>
               </div>
 
-              {!rsvpSubmitted ? (
+              {!rsvpDone ? (
                 <form
-                  onSubmit={handleRSVP}
-                  className="scroll-fade text-left space-y-6"
+                  className="reveal"
+                  style={{ transitionDelay: ".2s", border: "1px solid rgba(201,168,76,.2)", padding: "40px 36px", background: "rgba(201,168,76,.02)" }}
+                  onSubmit={(e) => { e.preventDefault(); setRsvpDone(true); }}
                   data-testid="rsvp-form"
                 >
-                  <div
-                    className="p-8 rounded-sm"
-                    style={{
-                      background: "white",
-                      border: "1px solid rgba(201,168,76,0.2)",
-                      boxShadow: "0 4px 24px rgba(100,80,20,0.06)",
-                    }}
-                  >
-                    {/* Name */}
-                    <div className="mb-6">
-                      <label
-                        className="block text-amber-700/70 tracking-widest text-xs uppercase mb-2"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      >
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        className="luxury-input w-full px-4 py-3 text-sm"
-                        placeholder="Your name"
-                        value={rsvpData.name}
-                        onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
-                        required
-                        data-testid="input-name"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      />
-                    </div>
-
-                    {/* Attending */}
-                    <div className="mb-6">
-                      <label
-                        className="block text-amber-700/70 tracking-widest text-xs uppercase mb-3"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      >
-                        Will you be attending?
-                      </label>
-                      <div className="flex gap-4">
-                        {[
-                          { value: "yes", label: "Joyfully Accept", icon: "💌" },
-                          { value: "no", label: "Regretfully Decline", icon: "🙏" },
-                        ].map((opt) => (
-                          <label
-                            key={opt.value}
-                            className="flex-1 flex items-center gap-3 p-4 rounded-sm cursor-pointer transition-all"
-                            style={{
-                              border: `1px solid ${rsvpData.attending === opt.value ? "#c9a84c" : "rgba(201,168,76,0.2)"}`,
-                              background: rsvpData.attending === opt.value ? "rgba(201,168,76,0.08)" : "transparent",
-                            }}
-                            data-testid={`attending-${opt.value}`}
-                          >
-                            <input
-                              type="radio"
-                              name="attending"
-                              value={opt.value}
-                              checked={rsvpData.attending === opt.value}
-                              onChange={(e) => setRsvpData({ ...rsvpData, attending: e.target.value })}
-                              className="sr-only"
-                            />
-                            <span className="text-lg">{opt.icon}</span>
-                            <span
-                              className="text-xs"
-                              style={{
-                                fontFamily: "'Montserrat', sans-serif",
-                                color: rsvpData.attending === opt.value ? "#8B6914" : "#a08040",
-                                fontWeight: rsvpData.attending === opt.value ? 500 : 400,
-                              }}
-                            >
-                              {opt.label}
-                            </span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Number of guests */}
-                    {rsvpData.attending === "yes" && (
-                      <div className="mb-6">
-                        <label
-                          className="block text-amber-700/70 tracking-widest text-xs uppercase mb-2"
-                          style={{ fontFamily: "'Montserrat', sans-serif" }}
-                        >
-                          Number of Guests
-                        </label>
-                        <select
-                          className="luxury-input w-full px-4 py-3 text-sm"
-                          value={rsvpData.guests}
-                          onChange={(e) => setRsvpData({ ...rsvpData, guests: e.target.value })}
-                          data-testid="select-guests"
-                          style={{ fontFamily: "'Montserrat', sans-serif" }}
-                        >
-                          {["1", "2", "3", "4", "5"].map((n) => (
-                            <option key={n} value={n}>{n} {n === "1" ? "Guest" : "Guests"}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* Message */}
-                    <div className="mb-8">
-                      <label
-                        className="block text-amber-700/70 tracking-widest text-xs uppercase mb-2"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      >
-                        Message for the Couple
-                      </label>
-                      <textarea
-                        className="luxury-input w-full px-4 py-3 text-sm resize-none"
-                        placeholder="Share your wishes and blessings..."
-                        rows={4}
-                        value={rsvpData.message}
-                        onChange={(e) => setRsvpData({ ...rsvpData, message: e.target.value })}
-                        data-testid="textarea-message"
-                        style={{ fontFamily: "'Montserrat', sans-serif" }}
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      className="w-full py-4 tracking-[0.25em] text-xs uppercase transition-all hover:opacity-90"
-                      style={{
-                        background: "linear-gradient(135deg, #8B1A1A, #c9a84c, #8B1A1A)",
-                        color: "#faf6ea",
-                        fontFamily: "'Montserrat', sans-serif",
-                        letterSpacing: "0.25em",
-                        border: "1px solid #c9a84c",
-                      }}
-                      data-testid="button-submit"
-                    >
-                      Send RSVP
-                    </button>
+                  {/* Name */}
+                  <div className="mb-6">
+                    <label style={{ display: "block", fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.5)", marginBottom: 8 }}>Full Name *</label>
+                    <input
+                      type="text" required
+                      className="luxury-input w-full"
+                      style={{ padding: "12px 16px", fontSize: "0.8rem" }}
+                      placeholder="Your name"
+                      value={rsvpData.name}
+                      onChange={(e) => setRsvpData({ ...rsvpData, name: e.target.value })}
+                      data-testid="input-name"
+                    />
                   </div>
+
+                  {/* Attending */}
+                  <div className="mb-6">
+                    <label style={{ display: "block", fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.5)", marginBottom: 10 }}>Attending?</label>
+                    <div className="flex gap-4">
+                      {[["yes", "💌 Joyfully Accept"], ["no", "🙏 Regretfully Decline"]].map(([val, label]) => (
+                        <label
+                          key={val}
+                          style={{
+                            flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
+                            padding: "12px", cursor: "pointer", fontSize: "0.65rem",
+                            fontFamily: "'Montserrat', sans-serif",
+                            border: `1px solid ${rsvpData.attending === val ? "#c9a84c" : "rgba(201,168,76,.18)"}`,
+                            background: rsvpData.attending === val ? "rgba(201,168,76,.08)" : "transparent",
+                            color: rsvpData.attending === val ? "#e8c96d" : "rgba(201,168,76,.45)",
+                            transition: "all .25s",
+                          }}
+                          data-testid={`attend-${val}`}
+                        >
+                          <input type="radio" name="attending" value={val} checked={rsvpData.attending === val}
+                            onChange={(e) => setRsvpData({ ...rsvpData, attending: e.target.value })}
+                            className="sr-only" />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Guests */}
+                  {rsvpData.attending === "yes" && (
+                    <div className="mb-6">
+                      <label style={{ display: "block", fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.5)", marginBottom: 8 }}>No. of Guests</label>
+                      <select className="luxury-input w-full" style={{ padding: "12px 16px", fontSize: "0.8rem" }}
+                        value={rsvpData.guests} onChange={(e) => setRsvpData({ ...rsvpData, guests: e.target.value })}
+                        data-testid="select-guests">
+                        {["1","2","3","4","5"].map((n) => <option key={n} value={n}>{n} {n==="1"?"Guest":"Guests"}</option>)}
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Message */}
+                  <div className="mb-8">
+                    <label style={{ display: "block", fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.5)", marginBottom: 8 }}>Your Wishes</label>
+                    <textarea
+                      className="luxury-input w-full" rows={4} style={{ padding: "12px 16px", fontSize: "0.8rem", resize: "none" }}
+                      placeholder="Share your blessings with the couple…"
+                      value={rsvpData.message}
+                      onChange={(e) => setRsvpData({ ...rsvpData, message: e.target.value })}
+                      data-testid="textarea-message"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full transition-opacity hover:opacity-85"
+                    style={{
+                      padding: "16px", fontFamily: "'Montserrat', sans-serif", fontSize: "0.6rem",
+                      letterSpacing: "0.3em", textTransform: "uppercase",
+                      background: "linear-gradient(135deg,#6b1414 0%,#c9a84c 50%,#6b1414 100%)",
+                      color: "#f5eedc", border: "1px solid #c9a84c", cursor: "pointer",
+                    }}
+                    data-testid="btn-submit"
+                  >
+                    Send RSVP
+                  </button>
                 </form>
               ) : (
                 <div
-                  className="scroll-fade p-12 rounded-sm text-center"
-                  style={{
-                    background: "linear-gradient(135deg, #1a0f08, #2c1810)",
-                    border: "1px solid rgba(201,168,76,0.3)",
-                  }}
+                  className="text-center reveal in-view"
+                  style={{ border: "1px solid rgba(201,168,76,.25)", padding: "60px 40px", background: "rgba(201,168,76,.02)" }}
                   data-testid="rsvp-success"
                 >
-                  <div className="text-5xl mb-6">💌</div>
-                  <h3
-                    className="gold-shimmer mb-4"
-                    style={{ fontFamily: "'Playfair Display', serif", fontSize: "1.8rem" }}
-                  >
-                    Thank You, {rsvpData.name}!
-                  </h3>
-                  <p
-                    className="text-amber-300/70 leading-relaxed"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", lineHeight: 1.8 }}
-                  >
+                  <div style={{ fontSize: "3rem", marginBottom: 20 }}>💌</div>
+                  <h3 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "2.5rem", color: "#e8c96d", marginBottom: 12 }}>Thank You, {rsvpData.name}!</h3>
+                  <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.1rem", fontStyle: "italic", color: "rgba(240,230,204,.55)", lineHeight: 1.9 }}>
                     {rsvpData.attending === "yes"
-                      ? "We are overjoyed that you will be joining us on our special day. Your presence will make it even more memorable."
+                      ? "We are overjoyed! Your presence will make our day even more special. See you on the 1st of July!"
                       : "We understand and will miss you dearly. Your warm wishes mean the world to us."}
                   </p>
                 </div>
@@ -970,39 +794,26 @@ export default function WeddingInvite() {
             </div>
           </section>
 
-          {/* FOOTER */}
+          {/* ── FOOTER ── */}
           <footer
-            style={{ background: "linear-gradient(180deg, #1a0f08 0%, #0d0703 100%)" }}
-            className="py-16 text-center px-6"
+            style={{
+              background: "linear-gradient(180deg,#0d0804 0%,#060402 100%)",
+              padding: "80px 24px 60px",
+              textAlign: "center",
+              borderTop: "1px solid rgba(201,168,76,.1)",
+            }}
           >
-            <div className="max-w-2xl mx-auto">
-              <h2
-                className="gold-shimmer mb-4"
-                style={{ fontFamily: "'Playfair Display', serif", fontSize: "clamp(2.5rem, 6vw, 4rem)" }}
-              >
-                Adarsh & Shreya
-              </h2>
-              <div className="gold-divider max-w-xs mx-auto mb-6">
-                <span className="text-amber-500/40 text-xs">✦</span>
-              </div>
-              <p
-                className="text-amber-400/50 tracking-[0.2em] text-xs uppercase mb-8"
-                style={{ fontFamily: "'Montserrat', sans-serif" }}
-              >
-                December 12, 2026 · Mumbai, India
-              </p>
-              <p
-                className="text-amber-300/40 italic"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem" }}
-              >
-                "Two hearts, one soul, forever."
-              </p>
-              <div className="mt-8 text-amber-500/20 text-xs tracking-widest" style={{ fontFamily: "'Montserrat', sans-serif" }}>
-                ✦ ✦ ✦
-              </div>
-            </div>
+            <h2 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(3rem,8vw,5rem)", color: "#e8c96d", marginBottom: 16, textShadow: "0 0 40px rgba(201,168,76,.2)" }}>
+              Adarsh & Shreya
+            </h2>
+            <div className="gold-divider mb-6"><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
+            <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.35)", marginBottom: 16 }}>
+              1st July 2026 · The Grand Palace, Mumbai
+            </p>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1rem", fontStyle: "italic", color: "rgba(240,230,204,.3)" }}>
+              "Two hearts, one beautiful journey."
+            </p>
           </footer>
-
         </div>
       )}
     </div>
