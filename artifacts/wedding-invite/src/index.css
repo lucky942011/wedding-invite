@@ -1,0 +1,424 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Montserrat:wght@300;400;500&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --button-outline: rgba(180,150,80, .15);
+  --badge-outline: rgba(180,150,80, .08);
+  --opaque-button-border-intensity: -8;
+  --elevate-1: rgba(180,150,80, .05);
+  --elevate-2: rgba(180,150,80, .10);
+
+  /* Warm luxury beige & gold palette */
+  --background: 38 30% 96%;
+  --foreground: 25 20% 18%;
+  --border: 38 30% 78%;
+  --input: 38 30% 82%;
+  --ring: 43 60% 52%;
+
+  --card: 40 35% 98%;
+  --card-foreground: 25 20% 18%;
+  --card-border: 38 25% 82%;
+
+  --popover: 40 35% 98%;
+  --popover-foreground: 25 20% 18%;
+  --popover-border: 38 25% 82%;
+
+  --primary: 43 60% 52%;
+  --primary-foreground: 38 30% 96%;
+
+  --secondary: 30 25% 88%;
+  --secondary-foreground: 25 20% 25%;
+
+  --muted: 38 20% 90%;
+  --muted-foreground: 25 15% 45%;
+
+  --accent: 43 55% 65%;
+  --accent-foreground: 25 20% 18%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+
+  --sidebar: 40 35% 94%;
+  --sidebar-foreground: 25 20% 18%;
+  --sidebar-border: 38 25% 82%;
+  --sidebar-primary: 43 60% 52%;
+  --sidebar-primary-foreground: 38 30% 96%;
+  --sidebar-accent: 43 55% 65%;
+  --sidebar-accent-foreground: 25 20% 18%;
+  --sidebar-ring: 43 60% 52%;
+
+  --chart-1: 43 60% 52%;
+  --chart-2: 30 40% 60%;
+  --chart-3: 20 35% 55%;
+  --chart-4: 50 45% 50%;
+  --chart-5: 10 50% 60%;
+
+  --app-font-sans: 'Montserrat', sans-serif;
+  --app-font-serif: 'Playfair Display', serif;
+  --app-font-mono: Menlo, monospace;
+  --radius: 0.25rem;
+
+  --shadow-2xs: 0px 1px 3px 0px rgba(100,80,20,0.06);
+  --shadow-xs: 0px 2px 6px 0px rgba(100,80,20,0.08);
+  --shadow-sm: 0px 2px 8px 0px rgba(100,80,20,0.10), 0px 1px 2px -1px rgba(100,80,20,0.06);
+  --shadow: 0px 4px 12px 0px rgba(100,80,20,0.12), 0px 2px 4px -1px rgba(100,80,20,0.06);
+  --shadow-md: 0px 6px 16px 0px rgba(100,80,20,0.14), 0px 4px 6px -1px rgba(100,80,20,0.08);
+  --shadow-lg: 0px 10px 24px 0px rgba(100,80,20,0.16), 0px 6px 8px -1px rgba(100,80,20,0.08);
+  --shadow-xl: 0px 16px 32px 0px rgba(100,80,20,0.18), 0px 8px 10px -1px rgba(100,80,20,0.10);
+  --shadow-2xl: 0px 24px 48px 0px rgba(100,80,20,0.22);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  --primary-border: hsl(43 60% 42%);
+  --secondary-border: hsl(30 25% 78%);
+  --muted-border: hsl(38 20% 82%);
+  --accent-border: hsl(43 55% 56%);
+  --destructive-border: hsl(0 72% 42%);
+  --sidebar-primary-border: hsl(43 60% 42%);
+  --sidebar-accent-border: hsl(43 55% 56%);
+}
+
+.dark {
+  --button-outline: rgba(255,215,100, .10);
+  --badge-outline: rgba(255,215,100, .05);
+  --opaque-button-border-intensity: 9;
+  --elevate-1: rgba(255,215,100, .04);
+  --elevate-2: rgba(255,215,100, .09);
+
+  --background: 25 15% 10%;
+  --foreground: 38 25% 88%;
+  --border: 30 20% 22%;
+  --input: 30 20% 18%;
+  --ring: 43 55% 50%;
+
+  --card: 25 15% 13%;
+  --card-foreground: 38 25% 88%;
+  --card-border: 30 18% 22%;
+
+  --popover: 25 15% 13%;
+  --popover-foreground: 38 25% 88%;
+  --popover-border: 30 18% 22%;
+
+  --primary: 43 55% 50%;
+  --primary-foreground: 25 15% 10%;
+
+  --secondary: 30 15% 18%;
+  --secondary-foreground: 38 25% 75%;
+
+  --muted: 30 12% 17%;
+  --muted-foreground: 38 15% 55%;
+
+  --accent: 43 50% 40%;
+  --accent-foreground: 38 25% 88%;
+
+  --destructive: 0 65% 48%;
+  --destructive-foreground: 0 0% 98%;
+
+  --sidebar: 25 15% 12%;
+  --sidebar-foreground: 38 25% 88%;
+  --sidebar-border: 30 18% 22%;
+  --sidebar-primary: 43 55% 50%;
+  --sidebar-primary-foreground: 25 15% 10%;
+  --sidebar-accent: 43 50% 40%;
+  --sidebar-accent-foreground: 38 25% 88%;
+  --sidebar-ring: 43 55% 50%;
+
+  --chart-1: 43 55% 50%;
+  --chart-2: 30 35% 55%;
+  --chart-3: 20 30% 50%;
+  --chart-4: 50 40% 45%;
+  --chart-5: 10 45% 55%;
+
+  --shadow-2xs: 0px 1px 3px 0px rgba(0,0,0,0.20);
+  --shadow-xs: 0px 2px 6px 0px rgba(0,0,0,0.24);
+  --shadow-sm: 0px 2px 8px 0px rgba(0,0,0,0.28), 0px 1px 2px -1px rgba(0,0,0,0.20);
+  --shadow: 0px 4px 12px 0px rgba(0,0,0,0.30), 0px 2px 4px -1px rgba(0,0,0,0.24);
+  --shadow-md: 0px 6px 16px 0px rgba(0,0,0,0.34), 0px 4px 6px -1px rgba(0,0,0,0.28);
+  --shadow-lg: 0px 10px 24px 0px rgba(0,0,0,0.36), 0px 6px 8px -1px rgba(0,0,0,0.28);
+  --shadow-xl: 0px 16px 32px 0px rgba(0,0,0,0.38), 0px 8px 10px -1px rgba(0,0,0,0.30);
+  --shadow-2xl: 0px 24px 48px 0px rgba(0,0,0,0.42);
+
+  --primary-border: hsl(43 55% 40%);
+  --secondary-border: hsl(30 15% 25%);
+  --muted-border: hsl(30 12% 24%);
+  --accent-border: hsl(43 50% 32%);
+  --destructive-border: hsl(0 65% 38%);
+  --sidebar-primary-border: hsl(43 55% 40%);
+  --sidebar-accent-border: hsl(43 50% 32%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+/* Wedding-specific global styles */
+.font-playfair {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-cormorant {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Gold shimmer animation */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.gold-shimmer {
+  background: linear-gradient(90deg, #b8963c 0%, #e8c96d 30%, #f5e0a0 50%, #e8c96d 70%, #b8963c 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* Envelope animations */
+@keyframes envelopeOpen {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(-20px) scale(1.05); opacity: 0.8; }
+  100% { transform: translateY(-100vh) scale(0.8); opacity: 0; }
+}
+
+@keyframes contentReveal {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes waxPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(184, 150, 60, 0.4); }
+  50% { transform: scale(1.03); box-shadow: 0 0 50px rgba(184, 150, 60, 0.7); }
+}
+
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes petalFall {
+  0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.4; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.envelope-exit {
+  animation: envelopeOpen 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.content-reveal {
+  animation: contentReveal 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.9s ease forwards;
+}
+
+.wax-pulse {
+  animation: waxPulse 3s ease-in-out infinite;
+}
+
+.float-up {
+  animation: floatUp 4s ease-in-out infinite;
+}
+
+/* Decorative divider */
+.gold-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #c9a84c;
+}
+
+.gold-divider::before,
+.gold-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+}
+
+/* Scroll-triggered fade */
+.scroll-fade {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.scroll-fade.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Petal particles */
+.petal {
+  position: fixed;
+  top: -20px;
+  font-size: 20px;
+  animation: petalFall linear infinite;
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+}
+
+/* Nav floating */
+.wedding-nav {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Gallery grid */
+.gallery-item {
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.08);
+}
+
+.gallery-item img {
+  transition: transform 0.6s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(38, 30%, 93%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9a84c;
+  border-radius: 3px;
+}
+
+/* Form inputs luxury styling */
+.luxury-input {
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 2px;
+  font-family: 'Montserrat', sans-serif;
+  letter-spacing: 0.05em;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.luxury-input:focus {
+  outline: none;
+  border-color: #c9a84c;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+/* Section padding */
+.section-padding {
+  padding: 100px 24px;
+}
+
+@media (max-width: 768px) {
+  .section-padding {
+    padding: 60px 20px;
+  }
+}

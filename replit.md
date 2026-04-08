@@ -4,6 +4,10 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+## Artifacts
+
+- **wedding-invite** (`artifacts/wedding-invite`): Premium luxury wedding invitation website. React + Vite, presentation-first (no backend). Features: animated envelope intro screen, hero, countdown timer, Our Story, Wedding Events (Mehendi/Haldi/Wedding), image gallery, RSVP form. Gold/beige/dark luxury aesthetic with Playfair Display + Cormorant Garamond fonts. Served at `/`.
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
