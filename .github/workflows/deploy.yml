@@ -4,14 +4,13 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
     steps:
       - uses: actions/checkout@v4
 
@@ -22,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'pnpm'
+          cache: pnpm
 
       - run: pnpm install --frozen-lockfile
 
@@ -30,17 +29,22 @@ jobs:
 
       - name: Verify build output
         run: |
-          echo "=== Working directory ==="
-          pwd
-          echo "=== Build output listing ==="
+          echo "=== Build output ==="
           ls -la artifacts/wedding-invite/dist/public
-          echo "=== Build subtree ==="
           find artifacts/wedding-invite/dist/public -maxdepth 2 | sort
 
-      - uses: actions/configure-pages@v5
-
-      - uses: actions/upload-pages-artifact@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          path: ./artifacts/wedding-invite/dist/public
+          path: artifacts/wedding-invite/dist/public
 
-      - uses: actions/deploy-pages@v2
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
