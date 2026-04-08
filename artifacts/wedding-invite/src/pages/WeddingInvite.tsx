@@ -265,7 +265,7 @@ export default function WeddingInvite() {
                 {/* Wax seal area */}
                 <circle cx="140" cy="125" r="32" fill="#8B1A1A" stroke="#c9a84c" strokeWidth="2" />
                 <circle cx="140" cy="125" r="26" fill="none" stroke="#c9a84c" strokeWidth="1" strokeDasharray="3 3" />
-                <text x="140" y="130" textAnchor="middle" fill="#c9a84c" fontSize="16" fontFamily="serif">A&P</text>
+                <text x="140" y="130" textAnchor="middle" fill="#c9a84c" fontSize="16" fontFamily="serif">A&S</text>
                 {/* Decorative lines on envelope */}
                 <line x1="80" y1="100" x2="200" y2="100" stroke="#c9a84c" strokeWidth="0.5" strokeOpacity="0.3" />
               </svg>

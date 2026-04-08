@@ -1,5 +1,5 @@
 kind = "web"
-previewPath = "/"
+previewPath = "/invitation/"
 title = "Wedding Invitation"
 version = "1.0.0"
 id = "artifacts/wedding-invite"
@@ -11,7 +11,7 @@ version = "1.0.0"
 
 [[services]]
 name = "web"
-paths = [ "/" ]
+paths = [ "/invitation/" ]
 localPort = 24366
 
 [services.development]
@@ -23,9 +23,9 @@ publicDir = "artifacts/wedding-invite/dist/public"
 serve = "static"
 
 [[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
+from = "/invitation/*"
+to = "/invitation/index.html"
 
 [services.env]
 PORT = "24366"
-BASE_PATH = "/"
+BASE_PATH = "/invitation/"

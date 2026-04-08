@@ -1,0 +1,66 @@
+Create a premium, elegant wedding invitation website with a cinematic luxury feel.
+
+Design theme:
+- Soft moonlight aesthetic with light beige, ivory, and gold tones
+- Floating candles animation (candles slowly moving upward)
+- Subtle glowing moon elements in background
+- Smooth fade-in and scroll animations
+- Romantic and royal typography (Playfair Display or similar)
+- Minimal, clean, high-end design (not cluttered)
+
+Entry Interaction:
+- First screen shows a beautiful invitation card
+- Text:
+  "Adarsh & Shreya"
+  "1st July 2026"
+- Add soft glowing candle or moonlight animation
+- On click, smoothly reveal the full website with animation and optional soft background music
+
+Pages / Sections:
+
+1. Hero Section
+- Display names: Adarsh & Shreya
+- Wedding date: 1st July 2026
+- Elegant centered layout
+- Background: soft moonlight or candle glow
+
+2. Countdown Section
+- Title: "Countdown"
+- Subtitle: "Until 1st July 2026"
+- Live countdown timer (days, hours, minutes, seconds)
+- Smooth animation
+
+3. Welcome Section
+- Title: "Welcome"
+- Text:
+  "We warmly invite you to celebrate our wedding day with us in the beautiful town of Ronda, Andalusia. We look forward to sharing this unforgettable moment with our most special people."
+- Elegant typography and spacing
+
+4. Venue Section
+- Title: "The Venue"
+- Subtitle: "Where we celebrate"
+- Embed Google Map using this link:
+  https://maps.app.goo.gl/GUs8k38PePZthah68
+- Show map preview or iframe
+
+5. Events Section (Timeline style, elegant cards)
+- 29 June 2026 – Engagement
+- 1 July 2026 – Haldi (11:00 AM, same venue)
+- 1 July 2026 – Wedding Ceremony (7:00 PM onwards)
+- Use a vertical timeline or luxury cards layout
+
+Technical Requirements:
+- Use HTML, CSS, and JavaScript only
+- Fully responsive (mobile-first)
+- Smooth scrolling between sections
+- Add subtle animations (fade, slide, glow)
+- Keep code clean and structured
+- Use modern CSS (flexbox/grid)
+
+Extra Enhancements:
+- Add floating particles or soft light effects
+- Optional background instrumental music after click
+- Elegant hover effects
+
+Goal:
+Make it look like a premium luxury wedding invitation website, similar to high-end digital invites, with emotional and cinematic feel.
