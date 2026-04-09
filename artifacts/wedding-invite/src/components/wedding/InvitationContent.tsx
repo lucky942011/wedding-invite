@@ -224,7 +224,7 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
         style={{ opacity: navVisible ? 1 : 0, pointerEvents: navVisible ? "auto" : "none", transition: "opacity .4s", background: "rgba(13, 8, 4, 0.8)", backdropFilter: "blur(8px)", borderBottom: "1px solid rgba(201, 168, 76, 0.2)" }}
       >
         <div className="max-w-5xl mx-auto px-6 h-13 flex items-center justify-between" style={{ height: 52 }}>
-          <span style={{ fontFamily: "'Great Vibes', cursive", fontSize: "1.5rem", color: "#e8c96d" }}>A & S</span>
+          <span style={{ fontFamily: "'Great Vibes', cursive", fontSize: "1.5rem", color: "#e8c96d" }}><span style={{ fontFamily: "'Playfair Display', serif" }}>A</span> & S</span>
           <div className="hidden md:flex gap-7">
             {[["story", "Story"], ["countdown", "Countdown"], ["events", "Events"], ["venue", "Venue"], ["rsvp", "RSVP"]].map(([id, label]) => (
               <button
@@ -301,7 +301,7 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
         {/* Couple names */}
         <div className="text-center fade-up z-10" style={{ animationDelay: ".4s" }}>
           <h1 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(3.5rem, 12vw, 7rem)", lineHeight: 1.05, color: "#e8c96d", textShadow: "0 0 60px rgba(201,168,76,.25)" }}>
-            Adarsh
+            <span style={{ fontFamily: "'Playfair Display', serif" }}>A</span>darsh
           </h1>
           <div className="gold-divider my-3">
             <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "1.2rem", color: "rgba(201,168,76,.5)" }}>weds</span>
@@ -692,7 +692,7 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
         }}
       >
         <h2 style={{ fontFamily: "'Great Vibes', cursive", fontSize: "clamp(3rem,8vw,5rem)", color: "#e8c96d", marginBottom: 16, textShadow: "0 0 40px rgba(201,168,76,.2)" }}>
-          Adarsh & Shreya
+        <span style={{ fontFamily: "'Playfair Display', serif" }}>A</span>darsh & Shreya
         </h2>
         <div className="gold-divider mb-6"><span style={{ color: "#c9a84c", fontSize: "0.7rem" }}>✦</span></div>
         <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "0.5rem", letterSpacing: "0.3em", textTransform: "uppercase", color: "rgba(201,168,76,.35)", marginBottom: 16 }}>
