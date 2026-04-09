@@ -19,8 +19,7 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 const isProduction = process.env.NODE_ENV === "production";
-const basePath =
-  process.env.BASE_PATH || (isProduction ? "/wedding-invite/" : "/");
+const basePath = "/"; // Adjust this if you want to serve from a subdirectory in production
 
 export default defineConfig({
   base: basePath,
