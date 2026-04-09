@@ -364,7 +364,7 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
           {/* Family names */}
           <div className="reveal mb-12 grid sm:grid-cols-2 gap-8" style={{ transitionDelay: ".15s" }}>
             {[
-              { family: "Groom's Family", names: ["Shri Sudhanshu Bhushan Prasad", "Smt. Bibha Shrivastava"], from: "Muzaffarpur, Bihar" },
+              { family: "Groom's Family", names: ["Shri Sudhanshu Bhushan Prasad", "Smt. Bibha Shrivastava"], from: "Madhubani, Bihar" },
               { family: "Bride's Family", names: ["Shri Sunil Kumar Shrivastava", "Dr. Prem Lata Shrivastava"], from: "Muzaffarpur, Bihar" },
             ].map((f, i) => (
               <div key={i} className="text-center p-6"
@@ -381,7 +381,7 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
           {/* Story milestones */}
           <div className="grid sm:grid-cols-2 gap-6 max-w-xl mx-auto">
             {[
-              { year: "Dec 2025", title: "First Meeting", icon: "✨", desc: "On the 5th of December 2025, two souls met and the universe quietly smiled — a moment that changed everything." },
+              { year: "Dec 2025", title: "First Meeting", icon: "✨", desc: "On the 2nd of December 2025, two souls met and the universe quietly smiled — a moment that changed everything." },
               { year: "2026", title: "The Proposal", icon: "💍", desc: "Under a sky full of stars, Adarsh asked, and Shreya said yes — and a lifetime of together began." },
             ].map((s, i) => (
               <div key={s.year} className="reveal event-card p-6 text-center" style={{ transitionDelay: `${i * 0.12}s` }}>
