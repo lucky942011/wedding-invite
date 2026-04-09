@@ -364,8 +364,8 @@ const handleRsvpSubmit = async (e: React.FormEvent) => {
           {/* Family names */}
           <div className="reveal mb-12 grid sm:grid-cols-2 gap-8" style={{ transitionDelay: ".15s" }}>
             {[
-              { family: "Groom's Family", names: ["Shri Sudhanshu Bhushan Prasad", "Smt. Bibha Shrivastava"], from: "Madhubani, Bihar" },
-              { family: "Bride's Family", names: ["Shri Sunil Kumar Shrivastava", "Dr. Prem Lata Shrivastava"], from: "Muzaffarpur, Bihar" },
+              { family: "Groom's Family", names: ["Smt. Bibha Shrivastava", "Shri Sudhanshu Bhushan Prasad"], from: "Madhubani, Bihar" },
+              { family: "Bride's Family", names: ["Dr. Prem Lata Shrivastava", "Shri Sunil Kumar Shrivastava"], from: "Muzaffarpur, Bihar" },
             ].map((f, i) => (
               <div key={i} className="text-center p-6"
                 style={{ border: "1px solid rgba(201,168,76,.15)", background: "rgba(201,168,76,.02)" }}>
