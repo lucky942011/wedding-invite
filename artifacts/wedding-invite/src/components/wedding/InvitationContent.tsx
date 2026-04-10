@@ -45,7 +45,7 @@ const EVENTS = [
     date: "June 29, 2026",
     day: "Monday",
     time: "6:00 PM Onwards",
-    venue: "Sri Banshi Garden, Muzaffarpur",
+    venue: "The Landmark Hotel, Muzaffarpur",
     icon: "🛕",
     desc: "Join us as two families come together to celebrate the union of Adarsh & Shreya in an intimate ceremony of blessings.",
   },
