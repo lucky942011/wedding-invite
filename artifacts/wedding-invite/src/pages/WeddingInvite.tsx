@@ -41,6 +41,22 @@ export default function WeddingInvite() {
     };
   }, []);
 
+  // Pause music when tab is hidden, resume when active
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        audioRef.current?.pause();
+      } else {
+        audioRef.current?.play().catch(() => {});
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
   const handleOpenInvitation = () => {
     setInviteOpen(true);
     if (audioRef.current) {
